@@ -2,8 +2,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#)
 
-### Project Sections:
-Each microproject contains Jupyter notebooks with step-by-step, visualizations, and result analysis.
+> A bunch of ML microprojects to review fundamental concepts. Each microproject contains Jupyter notebooks with visualizations, and result analysis.
 
 ---
 
@@ -37,7 +36,7 @@ To run these notebooks, you need **Python 3.x** installed (and **Jupyter Lab** i
 
 ## 💻 Usage
 
-Open Jupyter Lab or Google Collab, upload and run the notebooks:
+Open Jupyter Lab or Google Collab, upload and run the notebooks.
 
 ## Author
 
