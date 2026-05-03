@@ -282,6 +282,185 @@ normalizacion_min_max_numpy(arr)
 
 
 
+# LINKED LIST --> Simples apuntan al siguiente elemento, Dobles apuntan al anterior y al siguiente elemento, Circulares: el último elemento apunta al primero
+# --> buscar O(n): hay que seguir los punteros para llegar al dato deseado, insertar o borrar O(1), solo cambiar los punteros, no tienes que decirle a los elementos siguientes que se muevan
+# --> la linked list realmente es head, siempre hay que devolverlo y reasignarlo
+
+class Nodo:
+    """Nodo de una linked list"""
+    def __init__(self, valor):
+        self.valor = valor
+        self.siguiente = None
+
+head = Nodo(10)
+head.siguiente = Nodo(20)
+head.siguiente.siguiente = Nodo(30)
+
+def mostrar_lista_rec(head):
+    """Muestra la linked list completa: Espacio O(n)
+    
+    Args:
+    head (Nodo): Nodo inicial de la linked list
+    """
+    if head:
+        print(head.valor)
+        mostrar_lista_rec(head.siguiente)
+
+def mostrar_lista(head):
+    """Muestra la linked list completa: Espacio O(1)
+    
+    Args:
+    head (Nodo): Nodo inicial de la linked list
+    """
+    if not head: return None
+    curr = head # Hacemos una copia del puntero head llamada curr para lograr recorrer la linked list, conservamos a head intacto en el punto de partida por si necesitamos volver a usarlo
+    while curr:
+        print(curr.valor)
+        curr = curr.siguiente
+
+
+
+def encontrar_cola(head):
+    """Encuentra el nodo final de una linked list: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head (Nodo): Nodo inicial de la linked list
+
+    Returns:
+    Nodo: Nodo final de la linked list
+    """
+    if not head: return None
+    curr = head # Hacemos una copia del puntero head llamada curr para lograr recorrer la linked list y devolver el nodo final
+    while curr.siguiente:
+        curr = curr.siguiente
+    return curr
+
+def insertar_inicio(head, nuevo_head):
+    """Inserta un nodo al inicio de una linked list: Tiempo O(1), Espacio O(1)
+    
+    Args:
+    nodo (Nodo): Nodo a insertar al inicio de la linked list
+
+    Returns:
+    Nodo: Nuevo head de la linked list
+    """
+    nuevo_head.siguiente = head
+    return nuevo_head
+
+def insertar_final(head, nuevo_nodo):
+    """Inserta un valor al final de una linked list: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    nodo (Nodo): Nodo a insertar al final de la linked list
+
+    Returns:
+    Nodo: Nodo cabeza de la linked list modificada con el nuevo nodo al final
+    """
+    if not head: return nuevo_nodo # Si la linked list es vacía devolvemos el nuevo nodo directamente
+    encontrar_cola(head).siguiente = nuevo_nodo
+    return head
+
+head = insertar_inicio(head, Nodo(3))
+head = insertar_inicio(head, Nodo(2))
+head = insertar_final(head, Nodo(60))
+
+def eliminar_nodo(head, indice):
+    """Elimina el enésimo nodo: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head (Nodo): Cabeza de la linked list a eliminar el nodo
+    indice (Int): Índice del nodo a eliminar de la linked list
+    """
+    if indice == 0: return head.siguiente
+    curr = head # Hacemos una copia del puntero head llamada curr para lograr llegar al nodo deseado y eliminar el nodo
+    for _ in range(indice - 1):
+        if curr.siguiente: # Verificamos si curr todavía no ha llegado al final
+            curr = curr.siguiente
+
+    if curr.siguiente:
+        curr.siguiente = curr.siguente.siguiente # Simplemente saltamos el nodo, PELIGRO: Python tiene garbage collector, por lo que no debemos ir ahora a poner en None el Nodo.siguiente ese nodo ya ha sido eliminado y estaríamos haciendo referencia al siguiente nodo (DECAPITARÍAMOS LA LISTA)
+    return head
+    
+def invertir_linked_list(head):
+    """Invierte una linked list: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head (Nodo): Cabeza de la linked list a invertir
+    
+    Returns:
+    head (Nodo): Cabeza de la linked list a invertir
+    """
+    previo = None
+    actual = head
+    while actual:
+        siguiente = actual.siguiente
+        actual.siguiente = previo
+        previo = actual
+        actual = siguiente
+    return previo
+
+def encontrar_medio(head):
+    """Encuentra el punto medio de una linked list: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head (Nodo): Cabeza de la linked list
+
+    Returns:
+    Nodo: Nodo medio de la linked list
+    """
+    lento = rapido = head
+    while rapido and rapido.siguiente: # Comprobamos primero si existe el nodo actual y luego si existe el siguiente nodo
+        lento = lento.siguiente
+        rapido = rapido.siguiente.siguiente
+    return lento
+
+# Algoritmo de Floyd
+def detectar_ciclo(head):
+    """Determina si existe un bucle infinito dentro de la linked list o no: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head (Nodo): Nodo inicial de la linked list
+
+    Returns:
+    Boolean: True (hay bucle infinito) / False (todo correcto)
+    """
+    lento = rapido = head
+    while rapido and rapido.siguiente:
+        lento = lento.siguiente
+        rapido = rapido.siguiente.siguiente
+        if rapido == lento: return True
+    return False
+
+# Para pasar a Tiempo O(1) deberíamos tener clase LinkedList tanto con self.head como con self.tail --> de este modo no perderíamos tiempo recorriendo listas (sacrificamos espacio por tiempo)
+def unir_linked_lists(head1, head2):
+    """Une dos linked lists: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head1: Cabeza de la linked list 1
+    head2: Cabeza de la linked list 2
+
+    Returns:
+    Nodo: Cabeza de la nueva linked list
+    """
+    if not detectar_ciclo(head1) and not detectar_ciclo(head2):
+        if not head1: return head2
+        if not head2: return head1      
+        curr = encontrar_cola(head1)
+        curr.siguiente = head2
+        return head1
+
+def unir_linked_lists_ordenadas(head1, head2):
+    """Une dos linked lists de forma ordenada: Tiempo O(n), Espacio O(1)
+    
+    Args:
+    head1: Cabeza de la linked list 1
+    head2: Cabeza de la linked list 2
+
+    Returns:
+    Nodo: Cabeza de la nueva linked list
+    """
+    pass
+
 
 
 # TABLAS HASH / DICCIONARIOS (en python dict + set)
