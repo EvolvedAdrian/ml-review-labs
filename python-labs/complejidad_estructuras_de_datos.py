@@ -461,7 +461,99 @@ def unir_linked_lists_ordenadas(head1, head2):
     """
     pass
 
+# STACK (PILA) --> Operaciones Push y Pop O(1). Ejs de uso real: Ctrl+Z, Parsers, Call Stack
 
+class Pila:
+    """Pila con historial de mínimos"""
+    def __init__(self):
+        self.pila = []
+        self.min_pila = [] # No podemos poner una variable porque cuando se elimina un elemento tendríamos que recorrer toda la pila de nuevo para encontrar el mínimo destruyendo el espacio O(1)
+    
+    def push(self, el):
+        self.pila.append(el)
+
+        # Gestión de min_pila
+        if not self.min_pila or el <= self.min_pila[-1]: # Debe ser <=, sino al borrar el elemento se borraría de self.min_pila pero todavía quedaría un valor igual en self.pila
+            self.min_pila.append(el)
+    
+    def pop(self):
+        if not self.pila.is_empty():
+            erased = self.pila.pop()
+
+            # Gestión de min_pila
+            if self.min_pila[-1] == erased:
+                self.min_pila.pop()
+        return None
+    
+    def peek(self):
+        if not self.pila.is_empty():
+            return self.pila[-1]
+    
+    def is_empty(self):
+        return len(self.pila) == 0
+    
+    def get_min(self):
+        return self.min_pila[-1]
+
+    def show(self):
+        print(self.pila)
+
+# Base de los parsers de cualquier compilador
+def analizador_sintactico(cadena):
+    """Valida si los símbolos de una cadena están bien estructurados o no: Tiempo O(n), Espacio O(n)
+    
+    Args:
+    cadena (str): Sentencia a analizar sintácticamente
+
+    Returns:
+    bool: True (Cadena es correcta) / False (Cadena NO es correcta)
+    """
+    pila = Pila()
+    mapeo = {"{":"}", "[":"]", "(":")"}
+    for c in cadena:
+        if c in mapeo:
+            pila.push(c)
+        elif c in mapeo.values():
+            if not pila.is_empty() and mapeo[pila.peek()] == c:
+                pila.pop()
+            else:
+                return False
+    return pila.is_empty()
+
+
+# QUEUES (COLAS) --> Operaciones Enqueue y Dequeue O(1). Ejs de uso real: colas de impresión, servidores y peticiones web de usuarios, algoritmos de búsqueda en grafos
+from collections import deque # No implementar cola con una lista ya que lista.pop(0), es O(n) ya que todos los elementos tienen que moverse un paso hacia la derecha --> deque O(1)
+class Cola:
+    """Cola eficiente"""
+    def __init__(self):
+        self.cola = deque()
+
+    def enqueue(self, el): # O(1)
+        self.cola.append(el)
+
+    def dequeue(self): # O(1)
+        if self.cola:
+            self.cola.popleft()
+        return None
+    
+    def show(self):
+        print(self.cola)
+
+class ColaDosPilas:
+    """Implementación de cola usando 2 pilas"""
+    def __init__(self):
+        self.pilaEntrada = []
+        self.pilaSalida = []
+    
+    def enqueue(self, el): # O(1)
+        self.pilaEntrada.append(el)
+    
+    def dequeue(self): # O(n) --> Si se elimina un elemento se vuelca toda la self.pilaEntrada a la self.pilaSalida, aunque como cada elemento solo se vuelca una vez, el promedio de todas las operaciones es casi instantáneo, LO MALO DE VERDAD SERÍA HABERLO IMPLEMENTADO CON UNA SOLA LISTA
+        if self.pilaEntrada:
+            while self.pilaEntrada:
+                self.pilaSalida.append(self.pilaEntrada.pop()) # ahora self.pilaSalida tiene el orden de los elementos invertidos --> LIFO -> FIFO
+        
+        return self.pilaSalida.pop() if self.pilaSalida else None
 
 # TABLAS HASH / DICCIONARIOS (en python dict + set)
 # función matemática convierte cada clave en hash, ordenador luego va directo ahí --> buscar, insertar, borrar O(1)
