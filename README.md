@@ -2,7 +2,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#)
 
-> A bunch of ML microprojects to review fundamental concepts. Each microproject contains Jupyter notebooks with visualizations, and result analysis.
+> A bunch of ML microprojects to review fundamental concepts.
 
 ---
 
@@ -10,10 +10,11 @@
 
 | Technology | Use |
 | :--- | :--- |
-| **Python 3.x** | Language for analysis and modeling. |
+| **Python 3.14.2** | Language for analysis and modeling. |
 | **Jupiter Lab / Google Collab** | Notebook environment. |
+  **Collections** | Data structures. |
 | **NumPy / Pandas** | Data manipulation and numerical computations. |
-| **Matplotlib / Seaborn** | Data visualization. |
+| **Matplotlib ** | Data visualization. |
 | **Scikit-learn** | Machine Learning models and evaluation metrics. |
 
 ---
@@ -22,7 +23,7 @@
 
 ### Prerequisites
 
-To run these notebooks, you need **Python 3.x** installed (and **Jupyter Lab** if you want to run it locally).
+To run these projects, you need **Python 3.x** installed (and **Jupyter Lab** if you want to run it locally).
 
 1. **Clone the repository:**
     ```bash
