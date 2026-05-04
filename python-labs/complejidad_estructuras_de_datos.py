@@ -29,8 +29,7 @@ def fibonacci_mortal(n):
     return fibonacci_mortal(n-1) + fibonacci_mortal(n - 2)
 
 # Alternativa eficiente O(n) + Espacio O(1)
-cache = {}
-def fibonacci_bueno(n):
+def fibonacci_bueno(n, cache = {}):
     if n in cache: return cache[n]
     u, u2 = 0, 1
     for i in range(n):
@@ -153,7 +152,7 @@ def eliminar_duplicados(lista_ordenada):
     del lista_ordenada[escribir:]
     return escribir
 
-def encontrar_objetivo(lista_ordenada, objetivo):
+def encontrar_objetivo_ord(lista_ordenada, objetivo):
     """Dada una lista de números ordenados, encuentra los 2 números cuya suma es igual al objetivo: Tiempo O(n), Espacio O(1)
     
     Args:
@@ -559,10 +558,176 @@ class ColaDosPilas:
 # función matemática convierte cada clave en hash, ordenador luego va directo ahí --> buscar, insertar, borrar O(1)
 # --> a veces 2 claves diferentes dan mismo resultado matemático - colisión --> SOLUCIÓN: chaining, guardar ambas claves en mismo contenedor dentro de una linked list
 
+def encontrar_objetivo(lista, objetivo):
+    """Dada cualquier lista (no tiene por qué ser ordenada). Encuentra los índices de los 2 números que sumados dan el objetivo. Tiempo O(n), Espacio O(n)
+    
+    Args:
+    lista (list): Lista inicial
+    objetivo (int): Suma objetivo
+
+    Return:
+    tuple: Tupla de los 2 índices
+    """
+    if not lista: return None
+    historial = {} # Diccionario almacena números ya vistos
+    for i, num in enumerate(lista):
+        resto = objetivo - num
+        if resto in historial: return (historial[resto], i)
+        historial[num] = i
+
+def primer_caracter_norep(cadena):
+    """Devuelve el primer caracter no repetido de una cadena. Tiempo O(n), Espacio O(k) k = número de caracteres distintos
+    
+    Args:
+    cadena (str): Cadena a analizar
+
+    Returns:
+    str: Primer caracter no repetido
+    """
+    caracteres = {}
+    for c in cadena:
+        if not c in caracteres:
+            caracteres[c] = 1
+        else:
+            caracteres[c] += 1
+    
+    for c in caracteres:
+        if caracteres[c] == 1: return c
+    return None
+
+class LinkedList:
+    """Implementación de linked list con puntero al último nodo"""
+    def __init__(self):
+        self.head = None
+        self.tail = None # Logramos tiempo O(1)
+
+    def append(self, node):
+        if not self.head and not self.tail: self.head = self.tail = node
+        else:
+            self.tail.siguiente = node
+            self.tail = node
+        return self
+
+    def append_lista(self, node_list):
+        for n in node_list:
+            self.append(n)
+        return self
+    
+    def __repr__(self): # Cada objeto linked list se visualizará de este modo
+        curr = self.head
+        rep = []
+        while curr:
+            rep.append(str(curr.valor))
+            curr = curr.siguiente
+        return str(' -> '.join(rep))
+
+
+class TablaHash:
+    """Implementación de HashTable"""
+    def __init__(self):
+        self.HASH_TABLE_SIZE = 10 # Con solo 10 elementos provocamos colisiones como prueba
+        self.tabla = [None] * self.HASH_TABLE_SIZE
+
+    def _hash(self, cad):
+        return hash(cad) % self.HASH_TABLE_SIZE
+
+    def _check_clave(self, lista, clave):
+        if not lista: return None
+        curr = lista.head
+        while curr:
+            if curr.valor[0] == clave: return curr
+            curr = curr.siguiente
+        return None
+
+    def put(self, clave, valor):
+        index = self._hash(clave)
+        lista_interna = self.tabla[index]
+        if not lista_interna: self.tabla[index] = LinkedList().append(Nodo([clave, valor]))
+        else:
+            clave_existente = self._check_clave(lista_interna, clave)
+            if clave_existente:
+                clave_existente.valor[1] = valor
+            else:
+                lista_interna.append(Nodo([clave, valor]))
+
+    def get(self, clave):
+        lista_interna = self.tabla[self._hash(clave)]
+        if lista_interna:
+            curr_par = self._check_clave(lista_interna, clave)
+            if curr_par: return curr_par.valor[1]
+        return None
+
+    def show(self):
+        for i, cajon in enumerate(self.tabla):
+            print(f"Cajón {i}: {cajon}")
+
+def agrupar_anagramas(lista):
+    """Agrupa una lista de palabras por anagramas: 
+    Tiempo O(n * k log k) (n=bucle for, k*logk=sorted()[timsort][k=letras de cada palabra]) --> no se abrevia a O(n) ya que hay que diferenciar constantes de variables/dimensiones, en este caso hay 2 variables que pueden crecer: el número de palabras (n) o el número de letras de cada palabra (k = segunda dimensión)
+    - Constantes se ignoran, variables/dimensiones jamás
+    SUMA: O(n + k): un proceso va después de otro
+    MULTIPLICACIÓN O(n*k): un proceso va dentro de otro
+    
+    Espacio O(n)
+    
+    Args:
+    lista (list): Lista de palabras
+
+    Return:
+    list[list]: Lista de anagramas
+    """
+    anagramas = {}
+    for p in lista:
+        clave = "".join(sorted(p))
+        if not clave in anagramas:
+            anagramas[clave] = []
+        anagramas[clave].append(p)
+
+    return list(anagramas.values())
+
+# Memoización: almacenar resultados en caché para agilizar programa
+
+def fibonacci_optimo(num):
+    """Fibonacci óptimo pero no nos estaríamos beneficiando de la memoización, que permite no tener que recalcular resultados"""
+    if num == 1: return 0
+    if num == 2: return 1
+    ini = 0
+    sig = 1
+    for _ in range(num-2):
+        acc = ini + sig
+        ini = sig
+        sig = acc
+    return acc
+
+def fibonacci_memo(n, cache={}): # Como Python detecta llamadas a la misma función detecta diccionario asociado, caché se comparte entre ejecuciones, para evitar eso poner cache=None e inicializarla de cada vez dentro de la función
+    """Fibonacci con implementación manual de cache, la cache nos evita entrar en O(2^n) y nos deja O(n), ya que al ir almacenando valores en caché evitamos que el árbol de recursividad se abra por la derecha, todas las llamadas de la derecha, simplemente se convirtieron en llamada a la caché"""
+    if n == 0: return 0
+    if n == 1: return 1
+    
+    # Si ya lo calculamos antes, lo devolvemos de inmediato (O(1))
+    if n in cache:
+        return cache[n]
+    
+    # Si no, lo calculamos y lo guardamos en la cache
+    cache[n] = fibonacci_memo(n - 1, cache) + fibonacci_memo(n - 2, cache)
+    
+    return cache[n]
+
+# Método perfecto, caché optimizada
+from functools import lru_cache
+
+@lru_cache(maxsize=None) # Convierte la función en una Tabla Hash automática que va guardando resultados (optimizado en c --> constante de tiempo mucho menor)
+def fibo(n):
+    if n <= 1: return n
+    return fibo(n-1) + fibo(n-2)
 
 # ESTRUCTURAS DE DATOS NO LINEALES:
 # ÁRBOLES: estructura jerárquica (raíz, ramas, hojas)
 # ÁRBOLES BINARIOS: cada nodo máximo 2 hijos.
+
+
+
+
 # - BST todo lo que está a la izquierda es menor que el padre y lo de la derecha es mayor. Si los datos están medianamente balanceados su complejidad tiende a O(log n) como por ejemplo [3,1,5,2,4] pero sino su complejidad tiende a O(n), por ejemplo [1,2,3,4,5] genera un árbol totalmente desbalanceado, prácticamente una linked list
 # - HEAP: Dos tipos, el max-heap cada elemento padre siempre es mayor que sus hijos, min-heap, cada elemento padre siempre es menor que sus hijos --> utilización real en colas de prioridad
 # - AVL: BST autoequilibrado con diferencia de altura entre subárboles máxima de 1 --> optimiza búsquda ya que reduce complejidad, usado en DB en memoria
