@@ -554,6 +554,8 @@ class ColaDosPilas:
         
         return self.pilaSalida.pop() if self.pilaSalida else None
 
+
+
 # TABLAS HASH / DICCIONARIOS (en python dict + set)
 # función matemática convierte cada clave en hash, ordenador luego va directo ahí --> buscar, insertar, borrar O(1)
 # --> a veces 2 claves diferentes dan mismo resultado matemático - colisión --> SOLUCIÓN: chaining, guardar ambas claves en mismo contenedor dentro de una linked list
@@ -662,7 +664,8 @@ class TablaHash:
             print(f"Cajón {i}: {cajon}")
 
 def agrupar_anagramas(lista):
-    """Agrupa una lista de palabras por anagramas: 
+    """Agrupa una lista de palabras por anagramas:
+
     Tiempo O(n * k log k) (n=bucle for, k*logk=sorted()[timsort][k=letras de cada palabra]) --> no se abrevia a O(n) ya que hay que diferenciar constantes de variables/dimensiones, en este caso hay 2 variables que pueden crecer: el número de palabras (n) o el número de letras de cada palabra (k = segunda dimensión)
     - Constantes se ignoran, variables/dimensiones jamás
     SUMA: O(n + k): un proceso va después de otro
@@ -699,14 +702,15 @@ def fibonacci_optimo(num):
         sig = acc
     return acc
 
-def fibonacci_memo(n, cache={}): # Como Python detecta llamadas a la misma función detecta diccionario asociado, caché se comparte entre ejecuciones, para evitar eso poner cache=None e inicializarla de cada vez dentro de la función
+def fibonacci_memo(n, cache=None): # Como Python detecta llamadas a la misma función detecta diccionario anterior asociado, caché se comparte entre ejecuciones, si pusiéramos cache={}, la memoria se compartiría con las siguientes ejecuciones, para evitar eso ponemos cache=None y la inicializamos en cada ejecución externa nueva
+    if not cache: cache = {}
+
     """Fibonacci con implementación manual de cache, la cache nos evita entrar en O(2^n) y nos deja O(n), ya que al ir almacenando valores en caché evitamos que el árbol de recursividad se abra por la derecha, todas las llamadas de la derecha, simplemente se convirtieron en llamada a la caché"""
     if n == 0: return 0
     if n == 1: return 1
     
-    # Si ya lo calculamos antes, lo devolvemos de inmediato (O(1))
-    if n in cache:
-        return cache[n]
+    # Si ya lo calculamos en el subárbol izquierdo de la recursión, lo devolvemos de inmediato (O(1))
+    if n in cache: return cache[n]
     
     # Si no, lo calculamos y lo guardamos en la cache
     cache[n] = fibonacci_memo(n - 1, cache) + fibonacci_memo(n - 2, cache)
@@ -721,14 +725,156 @@ def fibo(n):
     if n <= 1: return n
     return fibo(n-1) + fibo(n-2)
 
+
 # ESTRUCTURAS DE DATOS NO LINEALES:
-# ÁRBOLES: estructura jerárquica (raíz, ramas, hojas)
-# ÁRBOLES BINARIOS: cada nodo máximo 2 hijos.
+# ÁRBOLES: estructura jerárquica (raíz, ramas, nodos, hojas)
+# ÁRBOLES BINARIOS: cada nodo tiene máximo 2 hijos.
+# BST (Binary Search Tree): Arbol binario de búsqueda, hijos a la izquierda son menores, a la derecha mayores. Árbol totalmente equilibrado (mejor caso): O(log n), Árbol totalmente desequilibrado (peor caso): O(n) --> prácticamente una linked list
+
+class NodoArbol:
+    def __init__(self, valor):
+        self.valor = valor
+        self.left = None
+        self.right = None
+
+raiz = NodoArbol(3)
+nod1 = NodoArbol(2)
+nod2 = NodoArbol(4)
+nod_l = NodoArbol(0)
+nod_r = NodoArbol(1)
+raiz.left = nod1
+raiz.right = nod2
+nod1.left = nod_l
+nod1.right = nod_r
+
+
+# Algoritmos DFS (Depth-First Search)
+def arbol_in_order(nodo):
+    """DFS In-Order
+
+    Primero recorre todo el subárbol izquierdo, luego el nodo, luego el derecho
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz
+    """
+    if nodo:
+        arbol_in_order(nodo.left)
+        print(nodo.valor) # Cuando escribe los valores es a la vuelta de la recursión
+        arbol_in_order(nodo.right)
+
+
+def arbol_pre_order(nodo):
+    """DFS Pre-Order
+    
+    Primero visita el nodo actual, luego baja por la izquierda, luego baja por la derecha
+
+    Args:
+    nodo (NodoArbol): Nodo raíz
+    """
+    if nodo:
+        print(nodo.valor)
+        arbol_pre_order(nodo.left)
+        arbol_pre_order(nodo.right)
+
+def arbol_post_order(nodo):
+    """DFS Post-Order
+    
+    Visita ambos subárboles y finalmente el nodo
+
+    Args:
+    nodo (NodoArbol): Nodo raíz
+    """
+    if nodo:
+        arbol_post_order(nodo.left)
+        arbol_post_order(nodo.right)
+        print(nodo.valor)
+
+def obtener_altura(nodo):
+    """Cuenta la altura de un árbol
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz
+
+    Returns:
+    int: Altura del árbol
+    """
+    if not nodo: return 0
+    return 1 + max(obtener_altura(nodo.left),obtener_altura(nodo.left))
+
+def contar_nodos(nodo):
+    """Cuenta el número de nodos de un árbol
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz
+
+    Returns:
+    int: Número de nodos del árbol
+    """
+    if not nodo: return 0
+    return 1 + contar_nodos(nodo.left) + contar_nodos(nodo.right) # Va sumando 1s según todas las ramas contadas, va todo a la izquierda primero antes de ir a la derecha
+
+# Inserción de elementos en BST (Binary Search Tree)
+def insertar_bst(nodo, valor):
+    """Inserta un valor en un BST
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz del árbol
+    valor (int): Valor numérico a insertar
+
+    Returns:
+    NodoArbol: Nodo raíz del árbol con el elemento insertado
+    """
+    if not nodo: return NodoArbol(valor)
+    curr = nodo
+    if valor < curr.valor:
+        curr.left = insertar_bst(curr.left, valor)
+    else:
+        curr.right = insertar_bst(curr.right, valor)
+
+    return curr # Cuando llega a un None en el que pueda insertar el nuevo valor, lo devuelve y lo inserta a la izquierda o derecha del elemento actual, luego rehace el árbol de vuelta
+
+
+def buscar_arbol(nodo, valor):
+    """Buscar un valor en un árbol
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz del árbol
+    valor (int): Valor numérico a buscar
+    Returns:
+    NodoArbol: Elemento encontrado
+    """
+    if not nodo: return False
+    if nodo.valor == valor: return True
+    if valor < nodo.valor:
+        return buscar_arbol(nodo.left, valor)
+    else:
+        return buscar_arbol(nodo.right, valor)
+
+
+# Algoritmos BFS (Breadth-First Search)
+def arbol_bfs(nodo):
+    """Algoritmo de búsqueda de amplitud"""
+    if not nodo: return
+    cola = deque([nodo])
+    while cola:
+        nodo_actual = cola.popleft()
+        print(nodo_actual.valor)
+
+        if nodo_actual.left:
+            cola.append(nodo_actual.left)
+        if nodo_actual.right:
+            cola.append(nodo_actual.right)
+
+
+
+# ÁRBOLES BALANCEADOS: Altura de los subárboles izquierdo y derecho difiere como máximo en 1 unidad.
+# - AVL: primeros en inventarse, diferencia máxima 1. Búsqueda ultrarápida, pero al modificar(insertar/borrar) se autorota muchas veces para mantener un equilibrio tan estricto.
+# - RB (Red-Black): estándar de la industria, ninguna rama es el doble de otra. Equilibrio entre búsqueda y modificaciones
+# - B/B+: sistemas de archivos y DB gigantes, cada nodo puede tener cientos de hijos
 
 
 
 
-# - BST todo lo que está a la izquierda es menor que el padre y lo de la derecha es mayor. Si los datos están medianamente balanceados su complejidad tiende a O(log n) como por ejemplo [3,1,5,2,4] pero sino su complejidad tiende a O(n), por ejemplo [1,2,3,4,5] genera un árbol totalmente desbalanceado, prácticamente una linked list
 # - HEAP: Dos tipos, el max-heap cada elemento padre siempre es mayor que sus hijos, min-heap, cada elemento padre siempre es menor que sus hijos --> utilización real en colas de prioridad
 # - AVL: BST autoequilibrado con diferencia de altura entre subárboles máxima de 1 --> optimiza búsquda ya que reduce complejidad, usado en DB en memoria
 # - ROJO-NEGRO: BST autoequilibrado más relajado (diferencia de altura entre subarboles puede ser hasta el doble del camino más corto) --> el más usado en mayoría de implementaciones en lenguajes por su rendimiento equilibrado inserciones/búsquedas
