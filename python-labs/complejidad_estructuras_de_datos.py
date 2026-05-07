@@ -111,7 +111,7 @@ def invertir_lista(lista):
         lista[ini_i], lista[fin_i] = lista[fin_i], lista[ini_i]
         ini_i, fin_i = ini_i + 1, fin_i + 1
 
-def rotar(lista, n):
+def rotar_lista(lista, n):
     """Rota los elementos de una lista n posiciones: Tiempo O(n), Espacio O(1)
     
     Args:
@@ -738,14 +738,6 @@ class NodoArbol:
         self.right = None
 
 raiz = NodoArbol(3)
-nod1 = NodoArbol(2)
-nod2 = NodoArbol(4)
-nod_l = NodoArbol(0)
-nod_r = NodoArbol(1)
-raiz.left = nod1
-raiz.right = nod2
-nod1.left = nod_l
-nod1.right = nod_r
 
 
 # Algoritmos DFS (Depth-First Search)
@@ -833,6 +825,10 @@ def insertar_bst(nodo, valor):
 
     return curr # Cuando llega a un None en el que pueda insertar el nuevo valor, lo devuelve y lo inserta a la izquierda o derecha del elemento actual, luego rehace el árbol de vuelta
 
+insertar_bst(raiz, 2)
+insertar_bst(raiz, 6)
+insertar_bst(raiz, 1)
+insertar_bst(raiz, 0)
 
 def buscar_arbol(nodo, valor):
     """Buscar un valor en un árbol
@@ -851,16 +847,20 @@ def buscar_arbol(nodo, valor):
         return buscar_arbol(nodo.right, valor)
 
 
-# Algoritmos BFS (Breadth-First Search)
 def arbol_bfs(nodo):
-    """Algoritmo de búsqueda de amplitud"""
+    """Algoritmo de BFS (Breadth-First Search)
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz del árbol
+    """
     if not nodo: return
     cola = deque([nodo])
-    while cola:
-        nodo_actual = cola.popleft()
+    while cola: # Mientras haya elementos en la cola
+        nodo_actual = cola.popleft() # Eliminamos elemento de la cola y lo guardamos
         print(nodo_actual.valor)
 
-        if nodo_actual.left:
+        # Accedemos a los nodos hijos si existen y los metemos en la cola para luego ser procesados
+        if nodo_actual.left: 
             cola.append(nodo_actual.left)
         if nodo_actual.right:
             cola.append(nodo_actual.right)
@@ -872,12 +872,97 @@ def arbol_bfs(nodo):
 # - RB (Red-Black): estándar de la industria, ninguna rama es el doble de otra. Equilibrio entre búsqueda y modificaciones
 # - B/B+: sistemas de archivos y DB gigantes, cada nodo puede tener cientos de hijos
 
+def calcular_factor_equilibrio(nodo):
+    """Calcula el factor de equilibrio de un árbol binario
+    
+    De este modo sabemos si un árbol necesita una rotación o no
 
+    Args:
+    nodo (NodoArbol): Nodo raíz del árbol binario
 
+    Returns:
+    int: Factor de equilibrio del árbol
+    """
+    if not nodo: return 0
+    return obtener_altura(nodo.right) - obtener_altura(nodo.left)
+
+def rotar_derecha(nodo):
+    """Rota a la derecha
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz del subárbol a balancear
+
+    Returns:
+    NodoArbol: Nuevo nodo raíz del subárbol balanceado
+    """
+    if not nodo: return None
+    nueva_raiz = nodo.left
+    t2 = nueva_raiz.right
+    nueva_raiz.right = nodo
+    nodo.left = t2
+    return nueva_raiz
+
+def rotar_izquierda(nodo):
+    """Rota a la izquierda
+    
+    Args:
+    nodo (NodoArbol): Nodo raíz del subárbol a balancear
+
+    Returns:
+    NodoArbol: Nuevo nodo raíz del subárbol balanceado
+    """
+    if not nodo: return None
+    nueva_raiz = nodo.right
+    t2 = nueva_raiz.left
+    nueva_raiz.left = nodo
+    nodo.right = t2
+    return nueva_raiz
+
+def insertar_avl(nodo, valor):
+    """Inserta un valor en un árbol AVL
+    
+    1. Recorre recursivamente el árbol hasta encontrar el sitio (None) donde hay que insertar el valor
+    2. Cuando llega ahí lo devuelve ya quedando insertado como hijo del nodo previo (nodo.left o nodo.right)
+    3. Al volver hacia atrás por cada nodo recorrido calcula su factor de equilibrio
+    4. Si hay algún tipo de desequilibrio lo corrige devolviendo el nuevo nodo padre y con el subárbol nuevamente balanceado, si no hay, simplemente devuelve el nodo actual ya que está perfecto
+
+    Args:
+    nodo (NodoArbol): Nodo raíz del árbol
+    valor (int): Valor a insertar en el árbol
+
+    Returns:
+    NodoArbol: Nodo raíz del árbol rebalanceado y con el elemento insertado
+    """
+    if not nodo: return NodoArbol(valor)
+    if valor < nodo.valor:
+        nodo.left = insertar_avl(nodo.left, valor)
+    elif valor > nodo.valor:
+        nodo.right = insertar_avl(nodo.right, valor)
+    else:
+        print(f"Error: El valor {valor} ya existe.")
+        return nodo
+    
+    fe = calcular_factor_equilibrio(nodo)
+    
+    # Desequilibrio LL
+    if fe < -1 and valor < nodo.left.valor: # El que generó el desequilibrio es el nuevo valor insertado, ANTES EL ÁRBOL ESTABA PERFECTAMENTE BALANCEADO, si valor > nodo.left.valor el nuevo valor desequilibrador entró por la izquierda, se podría hacer mirando que fe < 0, pero hay que llamar a la función, lo ideal: que cada Nodo guardase su propia altura en self.height, pero esto también es eficiente
+        return rotar_derecha(nodo)
+    # Desequilibrio LR
+    if fe < -1 and valor > nodo.left.valor:
+        nodo.left = rotar_izquierda(nodo.left)
+        return rotar_derecha(nodo)
+    # Desequilibrio RR
+    if fe > 1 and valor > nodo.right.valor:
+        return rotar_izquierda(nodo)
+    # Desequilibrio RL
+    if fe > 1 and valor < nodo.right.valor:
+        nodo.right = rotar_derecha(nodo.right)
+        return rotar_izquierda(nodo)
+
+    return nodo
+    
 
 # - HEAP: Dos tipos, el max-heap cada elemento padre siempre es mayor que sus hijos, min-heap, cada elemento padre siempre es menor que sus hijos --> utilización real en colas de prioridad
-# - AVL: BST autoequilibrado con diferencia de altura entre subárboles máxima de 1 --> optimiza búsquda ya que reduce complejidad, usado en DB en memoria
-# - ROJO-NEGRO: BST autoequilibrado más relajado (diferencia de altura entre subarboles puede ser hasta el doble del camino más corto) --> el más usado en mayoría de implementaciones en lenguajes por su rendimiento equilibrado inserciones/búsquedas
 
 # ÁRBOLES N-ARIOS: cada nodo puede tener n hijos
 # ÁRBOLES MULTICAMINO (B-TREES): B y B+ --> árboles balanceados para consultas rapidísimas en bases de datos
