@@ -964,6 +964,56 @@ def insertar_avl(nodo, valor):
 
 # - HEAP: Dos tipos, el max-heap cada elemento padre siempre es mayor que sus hijos, min-heap, cada elemento padre siempre es menor que sus hijos --> utilización real en colas de prioridad
 
+class MaxHeap:
+    def __init__(self):
+        self.heap = []
+
+    def _subir(self, i):
+        """Subir a la posición correcta el elemento del heap que acabamos de insertar"""
+        if i <= 0: return # Si el índice es 0 o "menor" ya no hay nada más que subir
+        padre_i = (i - 1) // 2
+        if self.heap[i] > self.heap[padre_i]:
+            self.heap[i], self.heap[padre_i] = self.heap[padre_i], self.heap[i]
+            self._subir(padre_i)
+
+    def _bajar(self, i):
+        """Bajar al elemento mas pequeño del heap mal posicionado
+        
+        Si el hijo mayor es mayor al elemento a bajar debemos intercambiarlos
+        """
+        heap_last_index = len(self.heap) - 1
+        # Determinamos cuál es el hijo mayor:
+        # 1. Vemos si existe el hijo 1: NO --> fuera, SI --> seguimos
+        # 2. Vemos si existe el hijo 2 y es mayor que el hijo 1: SÍ --> valoramos intercambio contra hijo 2, NO --> valoramos intercambio contra hijo 1
+        hijo_index = 2 * i + 1
+        if heap_last_index < hijo_index: return
+        if heap_last_index >= hijo_index + 1 and self.heap[hijo_index] < self.heap[hijo_index + 1]: hijo_index += 1
+
+        if self.heap[hijo_index] > self.heap[i]:
+            self.heap[i], self.heap[hijo_index] = self.heap[hijo_index], self.heap[i]
+            self._bajar(hijo_index)
+
+    def insertar(self, valor):
+        """Insertar nuevo valor en el max heap
+        Se inserta al final y luego se sube
+        """
+        if valor is None: return
+        self.heap.append(valor)
+        self._subir(len(self.heap) - 1)
+    
+    
+    def extraer_maximo(self):
+        """Extraer el elemento más grande del heap
+        Se intercambia el máximo con el mínimo y se elimina el máximo, ahora hay que bajar el mínimo
+        """
+        if not self.heap: return
+        self.heap[0], self.heap[-1] = self.heap[-1], self.heap[0]
+        self.heap.pop()
+        if len(self.heap) > 1: self.bajar(0)
+
+    def mostrar(self):
+        print(self.heap)
+
 # ÁRBOLES N-ARIOS: cada nodo puede tener n hijos
 # ÁRBOLES MULTICAMINO (B-TREES): B y B+ --> árboles balanceados para consultas rapidísimas en bases de datos
 
